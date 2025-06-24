@@ -1,0 +1,28 @@
+name: "Binary X9"
+description: "Detects added or modified binary files in a pull request and comments on the PR."
+author: "Lucas Balieiro <github@lucasbalieiro.dev>"
+inputs:
+  github_token:
+    description: "GitHub token to post comments"
+    required: true
+outputs:
+  binary_changed:
+    description: "true if binary files were changed"
+  new_files:
+    description: "newline-separated list of changed binary files"
+runs:
+  using: "composite"
+  steps:
+    - name: Detect binary changes
+      shell: bash
+      run: ${{ github.action_path }}/detect-binary.sh
+
+    - name: Post comment to PR if binary files found
+      if: env.binary_changed == 'true'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: ${{ github.action_path }}/comment.sh
+branding:
+  icon: alert-circle
+  color: yellow
